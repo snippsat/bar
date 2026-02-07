@@ -1,5 +1,6 @@
 from .green import hulk
 from .super_man import Fly
+from .fizzbuzz import fizzbuzz, print_fizzbuzz
 
 '''
 >>> import sys

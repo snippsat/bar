@@ -1,0 +1,1463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Noire — Specialty Coffee</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.2/lib/anime.min.js"></script>
+  <style>
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+
+    :root {
+      --bg-dark: #0c0a09;
+      --bg-warm: #1a1412;
+      --cream: #f5efe6;
+      --cream-muted: #d4c9b8;
+      --gold: #c9a96e;
+      --gold-bright: #e2c18d;
+      --espresso: #3c2415;
+      --espresso-light: #5a3a25;
+      --accent: #c9a96e;
+      --text-primary: #f5efe6;
+      --text-secondary: #a89a8a;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      scrollbar-width: thin;
+      scrollbar-color: var(--espresso-light) var(--bg-dark);
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg-dark);
+      color: var(--text-primary);
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+      cursor: default;
+    }
+
+    ::selection {
+      background: var(--gold);
+      color: var(--bg-dark);
+    }
+
+    /* --- Grain overlay --- */
+    .grain {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      pointer-events: none;
+      opacity: 0.035;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+      background-repeat: repeat;
+      background-size: 256px;
+    }
+
+    /* --- Navigation --- */
+    .nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      padding: 1.5rem 3rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      mix-blend-mode: difference;
+      transition: padding 0.4s ease;
+    }
+
+    .nav-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.6rem;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--cream);
+      text-decoration: none;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2.5rem;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: var(--cream);
+      text-decoration: none;
+      font-size: 0.82rem;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      position: relative;
+      padding-bottom: 2px;
+    }
+
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 0;
+      height: 1px;
+      background: var(--gold);
+      transition: width 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    .nav-links a:hover::after {
+      width: 100%;
+    }
+
+    /* --- Hero --- */
+    .hero {
+      position: relative;
+      height: 100vh;
+      min-height: 700px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 50% 40%, rgba(60, 36, 21, 0.6) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 50% at 75% 60%, rgba(201, 169, 110, 0.08) 0%, transparent 60%),
+        var(--bg-dark);
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      max-width: 900px;
+      padding: 0 2rem;
+    }
+
+    .hero-eyebrow {
+      font-size: 0.78rem;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 2rem;
+      font-weight: 500;
+      opacity: 0;
+    }
+
+    .hero-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(3.5rem, 10vw, 8.5rem);
+      font-weight: 900;
+      line-height: 0.95;
+      margin-bottom: 2rem;
+      color: var(--cream);
+    }
+
+    .hero-title .word {
+      display: inline-block;
+      overflow: hidden;
+      vertical-align: top;
+      margin-right: 0.2em;
+    }
+
+    .hero-title .word span {
+      display: inline-block;
+      transform: translateY(110%);
+    }
+
+    .hero-title .italic {
+      font-style: italic;
+      color: var(--gold);
+    }
+
+    .hero-subtitle {
+      font-size: 1.1rem;
+      color: var(--text-secondary);
+      max-width: 480px;
+      margin: 0 auto 3rem;
+      line-height: 1.7;
+      font-weight: 300;
+      opacity: 0;
+    }
+
+    .hero-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.8rem;
+      padding: 1rem 2.8rem;
+      background: transparent;
+      border: 1px solid var(--gold);
+      color: var(--gold);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 500;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      text-decoration: none;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      opacity: 0;
+      transition: color 0.4s ease;
+    }
+
+    .hero-cta::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--gold);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      z-index: -1;
+    }
+
+    .hero-cta:hover {
+      color: var(--bg-dark);
+    }
+
+    .hero-cta:hover::before {
+      transform: scaleX(1);
+    }
+
+    .hero-cta svg {
+      width: 16px;
+      height: 16px;
+      transition: transform 0.3s ease;
+    }
+
+    .hero-cta:hover svg {
+      transform: translateX(4px);
+    }
+
+    .hero-scroll {
+      position: absolute;
+      bottom: 3rem;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.8rem;
+      color: var(--text-secondary);
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      opacity: 0;
+    }
+
+    .hero-scroll-line {
+      width: 1px;
+      height: 60px;
+      background: linear-gradient(to bottom, var(--gold), transparent);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-scroll-line::after {
+      content: '';
+      position: absolute;
+      top: -100%;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: var(--cream);
+      animation: scrollLine 2s ease-in-out infinite;
+    }
+
+    @keyframes scrollLine {
+      0% { top: -100%; }
+      50% { top: 100%; }
+      100% { top: 100%; }
+    }
+
+    /* --- Steam particles (hero) --- */
+    .steam-container {
+      position: absolute;
+      bottom: 15%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 200px;
+      height: 300px;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .steam-particle {
+      position: absolute;
+      bottom: 0;
+      width: 6px;
+      height: 6px;
+      background: radial-gradient(circle, rgba(201,169,110,0.3) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+
+    /* --- Section commons --- */
+    .section {
+      padding: 10rem 3rem;
+      position: relative;
+    }
+
+    .section-label {
+      font-size: 0.72rem;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 1.5rem;
+      font-weight: 500;
+    }
+
+    .section-heading {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.4rem, 5vw, 4.2rem);
+      font-weight: 700;
+      line-height: 1.15;
+      margin-bottom: 1.5rem;
+      color: var(--cream);
+    }
+
+    .section-body {
+      font-size: 1.05rem;
+      line-height: 1.8;
+      color: var(--text-secondary);
+      font-weight: 300;
+      max-width: 520px;
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(60px);
+    }
+
+    /* --- About / Origin --- */
+    .origin {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6rem;
+      align-items: center;
+      max-width: 1300px;
+      margin: 0 auto;
+    }
+
+    .origin-visual {
+      position: relative;
+      aspect-ratio: 3/4;
+      overflow: hidden;
+      border-radius: 2px;
+    }
+
+    .origin-visual-inner {
+      width: 100%;
+      height: 100%;
+      background:
+        linear-gradient(160deg, var(--espresso) 0%, var(--bg-warm) 50%, var(--espresso-light) 100%);
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .origin-visual-inner::before {
+      content: '';
+      position: absolute;
+      width: 60%;
+      height: 60%;
+      border: 1px solid var(--gold);
+      opacity: 0.2;
+      border-radius: 50%;
+    }
+
+    .coffee-cup-art {
+      position: relative;
+      width: 180px;
+      height: 200px;
+    }
+
+    .cup-body {
+      width: 140px;
+      height: 120px;
+      background: linear-gradient(180deg, var(--cream-muted) 0%, var(--cream) 100%);
+      border-radius: 0 0 50% 50% / 0 0 40% 40%;
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    }
+
+    .cup-body::before {
+      content: '';
+      position: absolute;
+      top: 4px;
+      left: 8px;
+      right: 8px;
+      height: 50px;
+      background: radial-gradient(ellipse at center, #4a2c17 0%, #2a1810 70%);
+      border-radius: 50%;
+    }
+
+    .cup-handle {
+      position: absolute;
+      right: -18px;
+      top: 20px;
+      width: 35px;
+      height: 50px;
+      border: 4px solid var(--cream-muted);
+      border-left: none;
+      border-radius: 0 25px 25px 0;
+    }
+
+    .cup-plate {
+      position: absolute;
+      bottom: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 170px;
+      height: 18px;
+      background: var(--cream);
+      border-radius: 50%;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+    }
+
+    .origin-badge {
+      position: absolute;
+      top: 2rem;
+      right: 2rem;
+      width: 90px;
+      height: 90px;
+      border: 1px solid var(--gold);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Playfair Display', serif;
+      font-size: 0.65rem;
+      text-align: center;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--gold);
+      line-height: 1.3;
+    }
+
+    .origin-text {
+      padding-top: 2rem;
+    }
+
+    .origin-stat-row {
+      display: flex;
+      gap: 4rem;
+      margin-top: 3rem;
+      padding-top: 2rem;
+      border-top: 1px solid rgba(201,169,110,0.15);
+    }
+
+    .origin-stat h4 {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.8rem;
+      font-weight: 700;
+      color: var(--gold);
+      line-height: 1;
+    }
+
+    .origin-stat p {
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-top: 0.5rem;
+    }
+
+    /* --- Marquee --- */
+    .marquee-section {
+      padding: 4rem 0;
+      overflow: hidden;
+      border-top: 1px solid rgba(201,169,110,0.08);
+      border-bottom: 1px solid rgba(201,169,110,0.08);
+    }
+
+    .marquee-track {
+      display: flex;
+      width: max-content;
+      gap: 4rem;
+    }
+
+    .marquee-item {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2rem, 4vw, 4rem);
+      font-weight: 400;
+      white-space: nowrap;
+      color: var(--cream);
+      opacity: 0.15;
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+    }
+
+    .marquee-item .dot {
+      width: 8px;
+      height: 8px;
+      background: var(--gold);
+      border-radius: 50%;
+      opacity: 0.5;
+    }
+
+    /* --- Menu / Products --- */
+    .menu {
+      max-width: 1300px;
+      margin: 0 auto;
+    }
+
+    .menu-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-bottom: 5rem;
+    }
+
+    .menu-header .section-body {
+      text-align: right;
+    }
+
+    .menu-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2rem;
+    }
+
+    .menu-card {
+      position: relative;
+      background: linear-gradient(180deg, rgba(26,20,18,0.8) 0%, rgba(12,10,9,0.9) 100%);
+      border: 1px solid rgba(201,169,110,0.08);
+      padding: 3rem 2.5rem;
+      cursor: pointer;
+      overflow: hidden;
+      transition: border-color 0.4s ease;
+    }
+
+    .menu-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 50% 0%, rgba(201,169,110,0.06) 0%, transparent 60%);
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+
+    .menu-card:hover {
+      border-color: rgba(201,169,110,0.25);
+    }
+
+    .menu-card:hover::before {
+      opacity: 1;
+    }
+
+    .menu-card-number {
+      font-family: 'Playfair Display', serif;
+      font-size: 0.85rem;
+      color: var(--gold);
+      margin-bottom: 2.5rem;
+      opacity: 0.6;
+    }
+
+    .menu-card-icon {
+      width: 64px;
+      height: 64px;
+      margin-bottom: 2rem;
+      position: relative;
+    }
+
+    .bean-icon {
+      width: 100%;
+      height: 100%;
+      position: relative;
+    }
+
+    .bean-icon::before,
+    .bean-icon::after {
+      content: '';
+      position: absolute;
+      border-radius: 50%;
+    }
+
+    .bean-icon::before {
+      width: 32px;
+      height: 48px;
+      background: var(--espresso-light);
+      top: 8px;
+      left: 8px;
+      transform: rotate(-20deg);
+    }
+
+    .bean-icon::after {
+      width: 32px;
+      height: 48px;
+      background: var(--espresso);
+      top: 8px;
+      left: 22px;
+      transform: rotate(20deg);
+    }
+
+    .menu-card h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.6rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      color: var(--cream);
+      position: relative;
+    }
+
+    .menu-card p {
+      font-size: 0.92rem;
+      line-height: 1.7;
+      color: var(--text-secondary);
+      font-weight: 300;
+      position: relative;
+    }
+
+    .menu-card-origin {
+      display: inline-block;
+      margin-top: 1.5rem;
+      font-size: 0.72rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--gold);
+      padding: 0.4rem 1rem;
+      border: 1px solid rgba(201,169,110,0.2);
+      position: relative;
+    }
+
+    /* --- Process / Journey --- */
+    .process {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .process-header {
+      text-align: center;
+      margin-bottom: 6rem;
+    }
+
+    .process-header .section-body {
+      margin: 0 auto;
+    }
+
+    .process-timeline {
+      position: relative;
+      padding-left: 80px;
+    }
+
+    .process-timeline::before {
+      content: '';
+      position: absolute;
+      left: 30px;
+      top: 0;
+      bottom: 0;
+      width: 1px;
+      background: linear-gradient(to bottom, var(--gold), rgba(201,169,110,0.1));
+    }
+
+    .process-step {
+      position: relative;
+      padding: 0 0 5rem 3rem;
+    }
+
+    .process-step:last-child {
+      padding-bottom: 0;
+    }
+
+    .process-step-dot {
+      position: absolute;
+      left: -53px;
+      top: 6px;
+      width: 12px;
+      height: 12px;
+      border: 2px solid var(--gold);
+      border-radius: 50%;
+      background: var(--bg-dark);
+    }
+
+    .process-step-dot::after {
+      content: '';
+      position: absolute;
+      inset: 2px;
+      background: var(--gold);
+      border-radius: 50%;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .process-step.active .process-step-dot::after {
+      opacity: 1;
+    }
+
+    .process-step-number {
+      font-family: 'Playfair Display', serif;
+      font-size: 0.8rem;
+      color: var(--gold);
+      letter-spacing: 0.1em;
+      margin-bottom: 0.8rem;
+    }
+
+    .process-step h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--cream);
+      margin-bottom: 0.8rem;
+    }
+
+    .process-step p {
+      font-size: 0.95rem;
+      line-height: 1.8;
+      color: var(--text-secondary);
+      font-weight: 300;
+      max-width: 500px;
+    }
+
+    /* --- Testimonial --- */
+    .testimonial-section {
+      background: linear-gradient(180deg, var(--bg-dark) 0%, var(--bg-warm) 50%, var(--bg-dark) 100%);
+    }
+
+    .testimonial {
+      max-width: 800px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .testimonial-quote {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.5rem, 3.5vw, 2.6rem);
+      font-weight: 400;
+      font-style: italic;
+      line-height: 1.5;
+      color: var(--cream);
+      margin-bottom: 3rem;
+      position: relative;
+    }
+
+    .testimonial-quote::before {
+      content: '\201C';
+      font-size: 8rem;
+      position: absolute;
+      top: -3.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      color: var(--gold);
+      opacity: 0.15;
+      font-style: normal;
+      line-height: 1;
+    }
+
+    .testimonial-author {
+      font-size: 0.82rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--gold);
+      font-weight: 500;
+    }
+
+    .testimonial-role {
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+      margin-top: 0.4rem;
+      font-weight: 300;
+    }
+
+    /* --- CTA Banner --- */
+    .cta-banner {
+      max-width: 1300px;
+      margin: 0 auto;
+      position: relative;
+      padding: 6rem;
+      border: 1px solid rgba(201,169,110,0.15);
+      text-align: center;
+      overflow: hidden;
+    }
+
+    .cta-banner::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at center, rgba(60,36,21,0.4) 0%, transparent 70%);
+    }
+
+    .cta-banner .section-heading {
+      position: relative;
+      margin-bottom: 1.5rem;
+    }
+
+    .cta-banner .section-body {
+      margin: 0 auto 3rem;
+      text-align: center;
+      position: relative;
+    }
+
+    .cta-banner .hero-cta {
+      opacity: 1;
+      position: relative;
+    }
+
+    /* --- Floating beans decoration --- */
+    .floating-beans {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 1;
+      overflow: hidden;
+    }
+
+    .floating-bean {
+      position: absolute;
+      width: 10px;
+      height: 16px;
+      background: var(--espresso-light);
+      border-radius: 50%;
+      opacity: 0;
+    }
+
+    /* --- Footer --- */
+    .footer {
+      padding: 4rem 3rem;
+      border-top: 1px solid rgba(201,169,110,0.08);
+    }
+
+    .footer-inner {
+      max-width: 1300px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .footer-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.2rem;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--cream);
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 2rem;
+      list-style: none;
+    }
+
+    .footer-links a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.82rem;
+      letter-spacing: 0.08em;
+      transition: color 0.3s ease;
+    }
+
+    .footer-links a:hover {
+      color: var(--gold);
+    }
+
+    .footer-copy {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      opacity: 0.6;
+    }
+
+    /* --- Divider --- */
+    .divider {
+      width: 60px;
+      height: 1px;
+      background: var(--gold);
+      margin: 2rem 0;
+      opacity: 0.4;
+    }
+
+    .divider.center {
+      margin: 2rem auto;
+    }
+
+    /* --- Responsive --- */
+    @media (max-width: 1024px) {
+      .origin {
+        grid-template-columns: 1fr;
+        gap: 4rem;
+      }
+      .menu-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .section {
+        padding: 6rem 1.5rem;
+      }
+      .nav {
+        padding: 1rem 1.5rem;
+      }
+      .nav-links {
+        display: none;
+      }
+      .menu-grid {
+        grid-template-columns: 1fr;
+      }
+      .menu-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1.5rem;
+      }
+      .menu-header .section-body {
+        text-align: left;
+      }
+      .origin-stat-row {
+        gap: 2rem;
+      }
+      .cta-banner {
+        padding: 4rem 2rem;
+      }
+      .footer-inner {
+        flex-direction: column;
+        gap: 2rem;
+        text-align: center;
+      }
+      .process-timeline {
+        padding-left: 60px;
+      }
+      .process-step {
+        padding-left: 2rem;
+      }
+      .process-step-dot {
+        left: -33px;
+      }
+      .process-timeline::before {
+        left: 24px;
+      }
+    }
+
+    /* Smooth page load */
+    .page-loader {
+      position: fixed;
+      inset: 0;
+      z-index: 10000;
+      background: var(--bg-dark);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .loader-text {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem;
+      font-weight: 700;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--gold);
+    }
+  </style>
+</head>
+<body>
+  <!-- Page loader -->
+  <div class="page-loader" id="pageLoader">
+    <div class="loader-text">Noire</div>
+  </div>
+
+  <!-- Grain overlay -->
+  <div class="grain"></div>
+
+  <!-- Floating decorative beans -->
+  <div class="floating-beans" id="floatingBeans"></div>
+
+  <!-- Navigation -->
+  <nav class="nav" id="nav">
+    <a href="#" class="nav-logo">Noire</a>
+    <ul class="nav-links">
+      <li><a href="#origin">Origin</a></li>
+      <li><a href="#collection">Collection</a></li>
+      <li><a href="#process">Process</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero" id="hero">
+    <div class="hero-bg"></div>
+    <div class="steam-container" id="steamContainer"></div>
+    <div class="hero-content">
+      <p class="hero-eyebrow">Specialty Coffee Since 1923</p>
+      <h1 class="hero-title">
+        <span class="word"><span>The</span></span>
+        <span class="word"><span>Art</span></span>
+        <span class="word"><span>of</span></span>
+        <br />
+        <span class="word"><span class="italic">Perfect</span></span>
+        <span class="word"><span>Coffee</span></span>
+      </h1>
+      <p class="hero-subtitle">Sourced from the world's finest estates, roasted with precision, and crafted for those who refuse to settle for ordinary.</p>
+      <a href="#collection" class="hero-cta">
+        Explore Collection
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+      </a>
+    </div>
+    <div class="hero-scroll">
+      <span>Scroll</span>
+      <div class="hero-scroll-line"></div>
+    </div>
+  </section>
+
+  <!-- Origin -->
+  <section class="section" id="origin">
+    <div class="origin">
+      <div class="origin-visual reveal">
+        <div class="origin-visual-inner">
+          <div class="coffee-cup-art">
+            <div class="cup-plate"></div>
+            <div class="cup-body">
+              <div class="cup-handle"></div>
+            </div>
+          </div>
+        </div>
+        <div class="origin-badge">Est.<br/>1923</div>
+      </div>
+      <div class="origin-text">
+        <p class="section-label reveal">Our Story</p>
+        <h2 class="section-heading reveal">Born From<br/>Obsession</h2>
+        <div class="divider reveal"></div>
+        <p class="section-body reveal">Every cup of Noire begins with a singular obsession: finding the most extraordinary beans the world has to offer. From the misty highlands of Ethiopia to the volcanic slopes of Guatemala, we travel to the source — building lasting relationships with farmers who share our relentless pursuit of perfection.</p>
+        <div class="origin-stat-row reveal">
+          <div class="origin-stat">
+            <h4>12</h4>
+            <p>Countries sourced</p>
+          </div>
+          <div class="origin-stat">
+            <h4>47</h4>
+            <p>Estate partners</p>
+          </div>
+          <div class="origin-stat">
+            <h4>100</h4>
+            <p>Years of craft</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Marquee -->
+  <div class="marquee-section">
+    <div class="marquee-track" id="marqueeTrack">
+      <span class="marquee-item">Single Origin <span class="dot"></span></span>
+      <span class="marquee-item">Small Batch <span class="dot"></span></span>
+      <span class="marquee-item">Hand Roasted <span class="dot"></span></span>
+      <span class="marquee-item">Ethically Sourced <span class="dot"></span></span>
+      <span class="marquee-item">Artisan Blends <span class="dot"></span></span>
+      <span class="marquee-item">Single Origin <span class="dot"></span></span>
+      <span class="marquee-item">Small Batch <span class="dot"></span></span>
+      <span class="marquee-item">Hand Roasted <span class="dot"></span></span>
+      <span class="marquee-item">Ethically Sourced <span class="dot"></span></span>
+      <span class="marquee-item">Artisan Blends <span class="dot"></span></span>
+    </div>
+  </div>
+
+  <!-- Collection -->
+  <section class="section" id="collection">
+    <div class="menu">
+      <div class="menu-header">
+        <div>
+          <p class="section-label reveal">The Collection</p>
+          <h2 class="section-heading reveal">Signature<br/>Roasts</h2>
+        </div>
+        <p class="section-body reveal">Each blend tells a story of its origin — terroir, altitude, and the hands that nurtured it.</p>
+      </div>
+      <div class="menu-grid">
+        <div class="menu-card reveal">
+          <div class="menu-card-number">01</div>
+          <div class="menu-card-icon"><div class="bean-icon"></div></div>
+          <h3>Midnight Eclipse</h3>
+          <p>A deep, velvety dark roast with notes of dark chocolate, toasted walnut, and a whisper of black cherry. Bold and unapologetic.</p>
+          <span class="menu-card-origin">Sumatra · Indonesia</span>
+        </div>
+        <div class="menu-card reveal">
+          <div class="menu-card-number">02</div>
+          <div class="menu-card-icon"><div class="bean-icon"></div></div>
+          <h3>Golden Rift</h3>
+          <p>A luminous medium roast bursting with honey sweetness, stone fruit brightness, and a silky caramel finish. Endlessly complex.</p>
+          <span class="menu-card-origin">Yirgacheffe · Ethiopia</span>
+        </div>
+        <div class="menu-card reveal">
+          <div class="menu-card-number">03</div>
+          <div class="menu-card-icon"><div class="bean-icon"></div></div>
+          <h3>Volcanic Reserve</h3>
+          <p>Grown at 1,800m on volcanic soil, this single origin delivers bright citrus acidity, jasmine florals, and a clean, lingering finish.</p>
+          <span class="menu-card-origin">Antigua · Guatemala</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Process -->
+  <section class="section" id="process">
+    <div class="process">
+      <div class="process-header">
+        <p class="section-label reveal">The Craft</p>
+        <h2 class="section-heading reveal">From Bean<br/>to Cup</h2>
+        <div class="divider center reveal"></div>
+        <p class="section-body reveal">A meticulous journey of transformation — where science meets intuition, and patience yields perfection.</p>
+      </div>
+      <div class="process-timeline">
+        <div class="process-step reveal">
+          <div class="process-step-dot"></div>
+          <div class="process-step-number">Step 01</div>
+          <h3>Sourcing</h3>
+          <p>We travel directly to origin, tasting hundreds of lots to select only the top 2% of each harvest. Every bean is chosen for its unique character and story.</p>
+        </div>
+        <div class="process-step reveal">
+          <div class="process-step-dot"></div>
+          <div class="process-step-number">Step 02</div>
+          <h3>Roasting</h3>
+          <p>Our master roasters coax out each bean's potential through precise temperature curves — developed over decades and refined with every batch.</p>
+        </div>
+        <div class="process-step reveal">
+          <div class="process-step-dot"></div>
+          <div class="process-step-number">Step 03</div>
+          <h3>Cupping</h3>
+          <p>Every roast is rigorously cupped and scored. We evaluate aroma, acidity, body, and finish — ensuring only exceptional coffee bears the Noire name.</p>
+        </div>
+        <div class="process-step reveal">
+          <div class="process-step-dot"></div>
+          <div class="process-step-number">Step 04</div>
+          <h3>Delivery</h3>
+          <p>Sealed at peak freshness and shipped within 24 hours of roasting. Because extraordinary coffee deserves to arrive exactly as intended.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonial -->
+  <section class="section testimonial-section">
+    <div class="testimonial">
+      <p class="section-label reveal" style="text-align:center">Voices</p>
+      <div class="divider center reveal"></div>
+      <blockquote class="testimonial-quote reveal">
+        Noire doesn't just serve coffee — they reveal it. Each cup is a quiet revelation of what this bean was always meant to become.
+      </blockquote>
+      <p class="testimonial-author reveal">James Hartwell</p>
+      <p class="testimonial-role reveal">Head Barista, The Criterion London</p>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="section" id="contact">
+    <div class="cta-banner reveal">
+      <p class="section-label">Begin Your Journey</p>
+      <h2 class="section-heading">Ready to Taste<br/>the Difference?</h2>
+      <p class="section-body">Join a community of discerning coffee lovers who believe that every morning deserves something extraordinary.</p>
+      <a href="#" class="hero-cta">
+        Order Now
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+      </a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-logo">Noire</div>
+      <ul class="footer-links">
+        <li><a href="#origin">Origin</a></li>
+        <li><a href="#collection">Collection</a></li>
+        <li><a href="#process">Process</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+      <p class="footer-copy">&copy; 2026 Noire Coffee. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      /* ========== Page Loader ========== */
+      const loader = document.getElementById('pageLoader');
+      const loaderText = loader.querySelector('.loader-text');
+
+      anime({
+        targets: loaderText,
+        opacity: [0, 1],
+        translateY: [20, 0],
+        duration: 800,
+        easing: 'easeOutCubic',
+      });
+
+      window.addEventListener('load', () => {
+        const tl = gsap.timeline();
+        tl.to(loaderText, {
+          opacity: 0,
+          y: -20,
+          duration: 0.4,
+          ease: 'power2.in',
+        })
+        .to(loader, {
+          yPercent: -100,
+          duration: 0.8,
+          ease: 'power3.inOut',
+          onComplete: () => {
+            loader.style.display = 'none';
+            initAnimations();
+          },
+        });
+      });
+
+      /* ========== Hero Animations ========== */
+      function initAnimations() {
+        gsap.registerPlugin(ScrollTrigger);
+
+        const heroTL = gsap.timeline({ defaults: { ease: 'power3.out' } });
+
+        heroTL
+          .to('.hero-title .word span', {
+            y: 0,
+            duration: 1.2,
+            stagger: 0.08,
+          })
+          .to('.hero-eyebrow', {
+            opacity: 1,
+            y: 0,
+            duration: 0.8,
+          }, '-=0.7')
+          .to('.hero-subtitle', {
+            opacity: 1,
+            y: 0,
+            duration: 0.8,
+          }, '-=0.5')
+          .to('.hero-cta', {
+            opacity: 1,
+            y: 0,
+            duration: 0.6,
+          }, '-=0.4')
+          .to('.hero-scroll', {
+            opacity: 1,
+            duration: 0.6,
+          }, '-=0.3');
+
+        /* ========== Steam Particles (anime.js) ========== */
+        const steamContainer = document.getElementById('steamContainer');
+        for (let i = 0; i < 20; i++) {
+          const particle = document.createElement('div');
+          particle.classList.add('steam-particle');
+          particle.style.left = `${40 + Math.random() * 120}px`;
+          steamContainer.appendChild(particle);
+
+          animateSteam(particle, i);
+        }
+
+        function animateSteam(el, delay) {
+          anime({
+            targets: el,
+            translateY: [0, -(150 + Math.random() * 200)],
+            translateX: () => [-30 + Math.random() * 60],
+            opacity: [
+              { value: 0.4, duration: 400 },
+              { value: 0, duration: 1200 },
+            ],
+            scale: [0.5, 1.5 + Math.random()],
+            duration: 2500 + Math.random() * 1500,
+            delay: delay * 200 + Math.random() * 500,
+            easing: 'easeOutCubic',
+            loop: true,
+          });
+        }
+
+        /* ========== Floating beans (anime.js) ========== */
+        const beansContainer = document.getElementById('floatingBeans');
+        for (let i = 0; i < 8; i++) {
+          const bean = document.createElement('div');
+          bean.classList.add('floating-bean');
+          bean.style.left = `${Math.random() * 100}%`;
+          bean.style.top = `${Math.random() * 100}%`;
+          bean.style.transform = `rotate(${Math.random() * 360}deg)`;
+          beansContainer.appendChild(bean);
+
+          anime({
+            targets: bean,
+            translateY: [-40, 40],
+            translateX: [-20, 20],
+            rotate: [0, 360],
+            opacity: [0, 0.08, 0],
+            duration: 8000 + Math.random() * 6000,
+            delay: i * 600,
+            easing: 'easeInOutSine',
+            direction: 'alternate',
+            loop: true,
+          });
+        }
+
+        /* ========== Scroll reveals (GSAP ScrollTrigger) ========== */
+        gsap.utils.toArray('.reveal').forEach((el) => {
+          gsap.fromTo(el, {
+            opacity: 0,
+            y: 60,
+          }, {
+            opacity: 1,
+            y: 0,
+            duration: 1,
+            ease: 'power3.out',
+            scrollTrigger: {
+              trigger: el,
+              start: 'top 85%',
+              toggleActions: 'play none none none',
+            },
+          });
+        });
+
+        /* ========== Process step activation ========== */
+        gsap.utils.toArray('.process-step').forEach((step) => {
+          ScrollTrigger.create({
+            trigger: step,
+            start: 'top 70%',
+            onEnter: () => step.classList.add('active'),
+          });
+        });
+
+        /* ========== Stat counter animation (anime.js) ========== */
+        const statEls = document.querySelectorAll('.origin-stat h4');
+        const statObserver = new IntersectionObserver((entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              const el = entry.target;
+              const target = parseInt(el.textContent);
+              const obj = { val: 0 };
+              anime({
+                targets: obj,
+                val: target,
+                duration: 2000,
+                easing: 'easeOutExpo',
+                round: 1,
+                update: () => {
+                  el.textContent = obj.val;
+                },
+              });
+              statObserver.unobserve(el);
+            }
+          });
+        }, { threshold: 0.5 });
+
+        statEls.forEach((el) => statObserver.observe(el));
+
+        /* ========== Marquee (GSAP) ========== */
+        const marquee = document.getElementById('marqueeTrack');
+        const marqueeWidth = marquee.scrollWidth / 2;
+
+        gsap.to(marquee, {
+          x: -marqueeWidth,
+          duration: 30,
+          ease: 'none',
+          repeat: -1,
+        });
+
+        /* ========== Parallax hero background ========== */
+        gsap.to('.hero-bg', {
+          yPercent: 30,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: '.hero',
+            start: 'top top',
+            end: 'bottom top',
+            scrub: true,
+          },
+        });
+
+        /* ========== Menu card stagger ========== */
+        gsap.utils.toArray('.menu-card').forEach((card, i) => {
+          gsap.fromTo(card, {
+            opacity: 0,
+            y: 80,
+            rotationX: 6,
+          }, {
+            opacity: 1,
+            y: 0,
+            rotationX: 0,
+            duration: 1,
+            delay: i * 0.15,
+            ease: 'power3.out',
+            scrollTrigger: {
+              trigger: card,
+              start: 'top 85%',
+              toggleActions: 'play none none none',
+            },
+          });
+        });
+
+        /* ========== Smooth hover tilt on menu cards (anime.js) ========== */
+        document.querySelectorAll('.menu-card').forEach((card) => {
+          card.addEventListener('mouseenter', () => {
+            anime({
+              targets: card,
+              scale: 1.02,
+              duration: 400,
+              easing: 'easeOutCubic',
+            });
+          });
+          card.addEventListener('mouseleave', () => {
+            anime({
+              targets: card,
+              scale: 1,
+              duration: 400,
+              easing: 'easeOutCubic',
+            });
+          });
+        });
+
+        /* ========== Testimonial quote word-by-word reveal ========== */
+        const quoteEl = document.querySelector('.testimonial-quote');
+        const quoteText = quoteEl.textContent.trim();
+        quoteEl.innerHTML = quoteText.split(' ').map(
+          (word) => `<span style="display:inline-block;opacity:0;transform:translateY(15px);margin-right:0.3em">${word}</span>`
+        ).join('');
+
+        ScrollTrigger.create({
+          trigger: quoteEl,
+          start: 'top 75%',
+          onEnter: () => {
+            anime({
+              targets: quoteEl.querySelectorAll('span'),
+              opacity: [0, 1],
+              translateY: [15, 0],
+              delay: anime.stagger(40),
+              duration: 600,
+              easing: 'easeOutCubic',
+            });
+          },
+        });
+
+        /* ========== CTA banner glow pulse ========== */
+        const ctaBanner = document.querySelector('.cta-banner');
+        if (ctaBanner) {
+          ScrollTrigger.create({
+            trigger: ctaBanner,
+            start: 'top 80%',
+            onEnter: () => {
+              anime({
+                targets: ctaBanner,
+                borderColor: [
+                  'rgba(201,169,110,0.15)',
+                  'rgba(201,169,110,0.35)',
+                  'rgba(201,169,110,0.15)',
+                ],
+                duration: 3000,
+                easing: 'easeInOutSine',
+                loop: true,
+              });
+            },
+          });
+        }
+      }
+    })();
+  </script>
+</body>
+</html>
